@@ -20,7 +20,7 @@ export default function ChatList() {
 
       const promises = items.map(async (item) =>{
         const userDocRef = doc(db,"users",item.receiverId);
-        const userDocSnap = await getDoc(docRef);
+        const userDocSnap = await getDoc(userDocRef);
 
         const user = userDocSnap.data();
 
@@ -53,17 +53,17 @@ export default function ChatList() {
           
         }/>
       </div>
-      {chats.map((chat)=>{
+      {chats.map((chat)=>(
 
         <div className="item" key={chat.chatId}>
-        <img src="./avatar.png" alt=""/>
+        <img src={chat.user.avatar || "./avatar.png"} alt=""/>
         <div className="texts">
-          <span>Jane Doe</span>
+          <span>{chat.user.username}</span>
           <p>{chat.lastMessage}</p>
         </div>
       </div>
 
-      })}
+      ))}
      
       
        

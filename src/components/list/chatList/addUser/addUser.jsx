@@ -1,11 +1,14 @@
-import { query, collection, where, getDocs } from "firebase/firestore";
+import { query, collection, where, getDocs, setDoc, doc, serverTimestamp, updateDoc, arrayUnion } from "firebase/firestore";
 import "./addUser.css"
 import { db } from "../../../../lib/firebase";
 import { useState } from "react";
+import { useUserStore } from "../../../../lib/userStore";
 
 export default function addUser() {
 
   const [user, setUser] = useState(null);
+
+  const{currentUser} = useUserStore()
 
   const handleSearch = async e =>{
     e.preventDefault() //prevents the refreshing of a page
@@ -28,7 +31,49 @@ export default function addUser() {
         console.log(err);
     }
 
+  };
+
+  const handleAdd = async ()=>{
+
+
+    const chatRef = collection(db,"chats")
+    const userChatsRef = collection(db,"userchats")
+    try{
+
+      const newChatRef = doc(chatRef); 
+
+
+      await setDoc(newChatRef,{
+        createdAt: serverTimestamp(),
+        messages:[]
+      });
+
+      await updateDoc(doc(userChatsRef, user.id),{
+        chats: arrayUnion({
+          chatId: newChatRef.id,
+          lastMessage:"",
+          receiverId: currentUser.id,
+          updatedAt:Date.now(),
+        })
+      })
+
+      await updateDoc(doc(userChatsRef, currentUser.id),{
+        chats: arrayUnion({
+          chatId: newChatRef.id,
+          lastMessage:"",
+          receiverId: user.id,
+          updatedAt:Date.now(),
+        })
+      })
+
+
+    }
+    catch(err){
+      console.log(err);
+    }
   }
+
+
   return (
     <div className="addUser">
         <form onSubmit={handleSearch}>
